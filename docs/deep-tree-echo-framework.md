@@ -241,8 +241,16 @@ async function chatWithEmotion(userMessage: string) {
     // Generate response with emotional awareness
     const response = await session.prompt(`${emotionalContext}\n${userMessage}`);
     
-    // Evolve persona based on interaction quality
-    const interactionQuality = computeQuality(response); // Your metric
+    // Compute interaction quality (example implementation)
+    // This is a placeholder - implement your own quality metric
+    const computeQuality = (response: string): number => {
+        // Example: simple heuristic based on response length and emotional coherence
+        const lengthScore = Math.min(response.length / 100, 1);
+        const coherenceScore = engine.getAffectiveCoherence();
+        return (lengthScore + coherenceScore) / 2;
+    };
+    
+    const interactionQuality = computeQuality(response);
     echoEngine.evolvePersona(interactionQuality);
     
     return {

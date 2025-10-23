@@ -72,20 +72,32 @@ describe("Deep Tree Echo State Network", () => {
         const config = createDefaultDeepTreeEchoConfig();
         const engine = new DeepTreeEchoInferenceEngine(config);
         
+        // Process tokens first to establish emotional state
+        const tokens = [100, 200, 300];
+        engine.processTokens(tokens);
+        
         const initialPersona = {...engine.getConfig().persona};
         
-        // Provide positive feedback
-        engine.evolvePersona(0.5);
+        // Provide positive feedback multiple times to ensure visible change
+        for (let i = 0; i < 10; i++) {
+            engine.evolvePersona(0.5);
+        }
         
         const evolvedPersona = engine.getConfig().persona;
         
-        // At least one trait should have changed
+        // At least one trait should have changed with repeated evolution
         const hasChanged = 
-            initialPersona.emotionalExpressiveness !== evolvedPersona.emotionalExpressiveness ||
-            initialPersona.creativity !== evolvedPersona.creativity ||
-            initialPersona.empathy !== evolvedPersona.empathy;
+            Math.abs(initialPersona.emotionalExpressiveness - evolvedPersona.emotionalExpressiveness) > 0.001 ||
+            Math.abs(initialPersona.creativity - evolvedPersona.creativity) > 0.001 ||
+            Math.abs(initialPersona.empathy - evolvedPersona.empathy) > 0.001;
         
         expect(hasChanged).toBe(true);
+        
+        // Verify traits remain in valid range
+        Object.values(evolvedPersona).forEach(value => {
+            expect(value).toBeGreaterThanOrEqual(0);
+            expect(value).toBeLessThanOrEqual(1);
+        });
     });
 
     it("should maintain attention state", () => {
