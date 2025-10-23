@@ -76,8 +76,11 @@ export class MetricTensor {
      * Set metric component
      */
     public set(i: number, j: number, value: number): void {
-        this.components[i][j] = value;
-        this.components[j][i] = value; // Ensure symmetry
+        // Bounds checking to prevent prototype pollution
+        if (i >= 0 && i < this.dimension && j >= 0 && j < this.dimension) {
+            this.components[i][j] = value;
+            this.components[j][i] = value; // Ensure symmetry
+        }
     }
 
     /**
@@ -197,9 +200,13 @@ export class JuliaJSurface {
      * Update emotional state from input
      */
     public updateEmotionalState(input: Partial<Record<EmotionDimension, number>>): void {
-        // Update individual emotion dimensions
+        // Update individual emotion dimensions with prototype pollution protection
+        const validEmotions = Object.values(EmotionDimension);
         for (const [dim, value] of Object.entries(input)) {
-            this.emotionalState.dimensions.set(dim as EmotionDimension, value);
+            // Only update if it's a valid emotion dimension (prevent prototype pollution)
+            if (validEmotions.includes(dim as EmotionDimension) && Object.prototype.hasOwnProperty.call(input, dim)) {
+                this.emotionalState.dimensions.set(dim as EmotionDimension, value);
+            }
         }
 
         // Compute derived emotional dimensions (VAD model)
